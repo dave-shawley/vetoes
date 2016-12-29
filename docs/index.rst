@@ -4,3 +4,8 @@
    :hidden:
 
    history
+
+Configuration Related
+=====================
+.. autoclass:: vetoes.config.FeatureFlagMixin
+   :members:
