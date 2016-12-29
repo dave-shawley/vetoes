@@ -1,0 +1,8 @@
+build/
+dist/
+env/
+__pycache__/
+*.pyc
+*.egg*
+.coverage
+LOCAL-VERSION

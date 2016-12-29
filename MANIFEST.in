@@ -1,0 +1,5 @@
+graft docs
+graft tests
+include LOCAL-VERSION
+global-exclude __pycache__
+global-exclude *.pyc
