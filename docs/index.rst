@@ -9,3 +9,6 @@ Configuration Related
 =====================
 .. autoclass:: vetoes.config.FeatureFlagMixin
    :members:
+
+.. autoclass:: vetoes.config.TimeoutConfigurationMixin
+   :members:
