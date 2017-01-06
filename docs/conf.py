@@ -11,10 +11,10 @@ master_doc = 'index'
 source_suffix = '.rst'
 
 pygments_style = 'sphinx'
-html_theme = 'alabaster'
-html_theme_path = [alabaster.get_path()]
-html_sidebars = {'**': ['about.html', 'navigation.html']}
+html_sidebars = {'**': []}
+html_static_path = ['.']
 intersphinx_mapping = {
     'python': ('http://docs.python.org/3/', None),
     'rejected': ('http://rejected.readthedocs.io/en/latest/', None),
+    'tornado': ('http://tornadoweb.org/en/stable/', None),
 }
