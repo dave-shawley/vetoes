@@ -11,7 +11,7 @@ functionality on top of `rejected`_.
 +---------------+-------------------------------------------------+
 | |PyPI|        | https://pypi.org/project/vetoes/                |
 +---------------+-------------------------------------------------+
-| |ReadTheDocs| | https://vetoes.readthedocs.io/                  |
+| |Docs|        | https://pythonhosted.org/vetoes/                |
 +---------------+-------------------------------------------------+
 | |Coveralls|   | https://coveralls.io/github/dave-shawley/vetoes |
 +---------------+-------------------------------------------------+
@@ -25,7 +25,7 @@ functionality on top of `rejected`_.
    :target: https://github.com/dave-shawley/vetoes
 .. |PyPI| image:: https://img.shields.io/pypi/v/vetoes.svg
    :target: https://pypi.org/project/vetoes
-.. |ReadTheDocs| image:: https://readthedocs.org/projects/vetoes/badge/
-   :target: https://vetoes.readthedocs.io/
+.. |Docs| image:: https://img.shields.io/badge/docs-pythonhosted-green.svg
+   :target: https://pythonhosted.com/vetoes/
 .. |Travis| image:: https://img.shields.io/travis/dave-shawley/vetoes.svg
    :target: https://travis-ci.org/dave-shawley/vetoes

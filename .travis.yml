@@ -6,9 +6,10 @@ python:
   - pypy
 sudo: false
 install:
-  - pip install -r test-requirements.txt coveralls
+  - pip install -r test-requirements.txt coveralls sphinx
 script:
   - nosetests
+  - ./setup.py build_sphinx
 after_success:
   - coveralls
 deploy:
