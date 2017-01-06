@@ -1,9 +1,9 @@
 language: python
 python:
-   - 2.7
-   - 3.4
-   - 3.5
-   - pypy
+  - 2.7
+  - 3.4
+  - 3.5
+  - pypy
 sudo: false
 install:
   - pip install -r test-requirements.txt coveralls
@@ -11,3 +11,14 @@ script:
   - nosetests
 after_success:
   - coveralls
+deploy:
+  provider: pypi
+  user: daveshawley
+  password:
+    secure: jPun4MbwTNenHjX/J0huQrfdFmrDJlg7MzWTpcFYUUn4W6hUuRFGtLBvDmb5LmHJfuo16xxY7SeEN/KS0nQr7IALL1aZBuXnBEATt0OQi+04IEG2KeK2EvwD/ZZNJsgGkQ4ajZ1SvlqoKO/0ceeVBL0/dD45hgFjH0TXATePa1WBFKuLKT8eWZ/1RZcsScLBETsxLiyPHZcoJ7NVGky9KfIo4mO1o7uZubmRNydxKfFj5a48DhCPYmKytMd1GKvjctHx50M0jeuA9Eo9/N400uBeysHX6eyT/zlxIOlsgCmXKF4wZIDc2w1EVMojEHFd3E08lBXcFdEH3+PuYnZj0HvC69pM7c0t+iQgv5E7fgA/Edhr8i5d2jwS0I3bKeWfl6Zp4Yc5EEa1j/YMSJBpiW7J0DHigy+y31UcDq+DkJie2tPxnwU6wkxqdjpl5OLLWoLK8N4j5yr5XxQhKdBWewNhfFG7MAj6GixXtAR1iJ+0e6DkXk0jlp7bfGhNoqGs23g9e7xGROdZjGY0pBM12riGHqPwAyXeSrULfCBjqeMMFuJIAe1saVqGyPfiTdU9ReLsECiSy8QBY6zAC5LMSV6UEQMND2YTrZfG/1L6DNSF8RlGzK53kAY3SCGka1Ozc1rOuh4ND1jZ+HEqFYgjfWafFn7foMVbwbgcTSXsK7g=
+  distributions: sdist bdist_wheel
+  on:
+    tags: true
+    all_branches: true
+    repo: dave-shawley/vetoes
+    python: 3.4
