@@ -16,11 +16,16 @@ Configuration Related
 Release History
 ===============
 
+`0.1.1`_ (06-Jan-2017)
+----------------------
+- Replaced readthedocs with pythonhosted.org.
+
 `0.1.0`_ (06-Jan-2017)
 ----------------------
 - Initial release including :class:`vetoes.service.HTTPServiceMixin`,
   :class:`vetoes.config.FeatureFlagMixin`, and
   :class:`vetoes.config.TimeoutConfigurationMixin`
 
-.. _Next Release: https://github.aweber.io/edeliv/vetoes/compare/0.0.0...HEAD
+.. _Next Release: https://github.aweber.io/edeliv/vetoes/compare/0.1.1...HEAD
+.. _0.1.1: https://github.aweber.io/edeliv/vetoes/compare/0.1.0...0.1.1
 .. _0.1.0: https://github.aweber.io/edeliv/vetoes/compare/0.0.0...0.1.0
