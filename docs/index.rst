@@ -1,9 +1,9 @@
 .. include:: ../README.rst
 
-.. toctree::
-   :hidden:
-
-   history
+HTTP API Helpers
+================
+.. autoclass:: vetoes.service.HTTPServiceMixin
+   :members:
 
 Configuration Related
 =====================
@@ -12,3 +12,8 @@ Configuration Related
 
 .. autoclass:: vetoes.config.TimeoutConfigurationMixin
    :members:
+
+Release History
+===============
+
+.. _Next Release: https://github.aweber.io/edeliv/vetoes/compare/0.0.0...HEAD
