@@ -147,3 +147,14 @@ class HTTPServiceMixinTests(testing.AsyncTestCase):
             self.consumer.get_service_url('fetch-stats'),
             method='GET', raise_error=False)
         self.assertIs(response, self.http_response)
+
+    @testing.gen_test
+    def test_that_url_kwarg_skips_service_lookup(self):
+        response = yield self.consumer.call_http_service(
+            'frobinicate', 'GET', url='https://google.com')
+
+        self.http.fetch.assert_called_once_with(
+            'https://google.com', method='GET', raise_error=False)
+        self.assertIs(response, self.http_response)
+        self.sentry_client.tags_context.assert_called_once_with(
+            {'service_invoked': 'frobinicate'})

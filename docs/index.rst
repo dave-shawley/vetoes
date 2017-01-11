@@ -16,6 +16,11 @@ Configuration Related
 Release History
 ===============
 
+`Next Release`_
+---------------
+- Added ``url`` keyword to
+  :meth:`vetoes.service.HTTPServiceMixin.call_http_service`
+
 `0.1.1`_ (06-Jan-2017)
 ----------------------
 - Replaced readthedocs with pythonhosted.org.
