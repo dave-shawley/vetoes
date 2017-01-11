@@ -72,6 +72,8 @@ class HTTPServiceMixin(consumer.Consumer):
         :keyword bool raise_error: if this keyword is included and
             set to :data:`False`, then HTTP errors will be returned
             instead of raised as exceptions.
+        :keyword str url: if this keyword is included then it is used
+            as-is instead of doing a service lookup.
         :param kwargs: additional keyword arguments are passed to
             :meth:`tornado.httpclient.AsyncHTTPClient.fetch`.
 
@@ -99,10 +101,15 @@ class HTTPServiceMixin(consumer.Consumer):
         if headers:
             kwargs['headers'] = headers
 
-        service = self.__service_map[function]
+        if 'url' in kwargs:
+            url = kwargs.pop('url')
+            service = function
+        else:
+            service = self.__service_map[function]
+            url = self.get_service_url(
+                service, *path, query_args=kwargs.pop('query_args', None))
+
         self.sentry_client.tags_context({'service_invoked': service})
-        url = self.get_service_url(service, *path,
-                                   query_args=kwargs.pop('query_args', None))
 
         self.logger.debug('sending %s request to %s', method, url)
         raise_error = kwargs.pop('raise_error', True)
