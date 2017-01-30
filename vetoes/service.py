@@ -1,13 +1,12 @@
 import json
 import select
 import socket
-import uuid
 
 from rejected import consumer
-from tornado import concurrent, gen, httpclient, httputil, ioloop
+from tornado import gen, httpclient, httputil, ioloop
 
 
-class HTTPServiceMixin(object):
+class HTTPServiceMixin(consumer.Consumer):
     """
     Mix this in to add the :meth:`.call_http_service` method.
 
@@ -33,6 +32,37 @@ class HTTPServiceMixin(object):
     the **HTTP service** which is passed into :meth:`.get_service_url` to
     construct the request URL.
 
+    HTTP client behavior is controlled via consumer level configuration under
+    the ``vetoes`` key. The following options are available:
+
+    +-----------------+-----------------------------------------------------+
+    | Key             | Description                                         |
+    +=================+=====================================================+
+    | max_clients     | The max # of simultaneous requests that can be made |
+    +-----------------+-----------------------------------------------------+
+    | connect_timeout | Timeout for initial connection in seconds           |
+    +-----------------+-----------------------------------------------------+
+    | request_time    | Timeout for entire request in seconds               |
+    +-----------------+-----------------------------------------------------+
+
+    *Example Configuration:*
+
+    .. code:: yaml
+
+        Application:
+          Consumers:
+            example:
+              consumer: rejected.example.Consumer
+              connections:
+                - name: rabbitmq1
+              qty: 2
+              queue: generated_messages
+              config:
+                vetoes:
+                  max_clients: 10
+                  connect_timeout: 5.0
+                  request_timeout: 30.0
+
     .. attribute:: http_headers
 
        :class:`tornado.httputil.HTTPHeaders` instance of headers
@@ -50,13 +80,14 @@ class HTTPServiceMixin(object):
         self.__service_map = kwargs.pop('service_map')
         super(HTTPServiceMixin, self).__init__(*args, **kwargs)
         self.http_headers = httputil.HTTPHeaders()
+        settings = self._settings.get('vetoes', {})
         self.http = httpclient.AsyncHTTPClient(
             force_instance=True,
-            max_clients=self._settings.get('max_clients'))
+            max_clients=settings.get('max_clients'))
         self.http.defaults['connect_timeout'] = \
-            self._settings.get('connect_timeout', 5.0)
+            settings.get('connect_timeout', 5.0)
         self.http.defaults['request_timeout'] = \
-            self._settings.get('connect_timeout', 30.0)
+            settings.get('request_timeout', 30.0)
         self.io_loop = ioloop.IOLoop.current()
 
     @gen.coroutine
@@ -114,7 +145,6 @@ class HTTPServiceMixin(object):
             service = self.__service_map[function]
             url = self.get_service_url(
                 service, *path, query_args=kwargs.pop('query_args', None))
-
 
         self.set_sentry_context('service_invoked', service)
 
