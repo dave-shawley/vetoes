@@ -3,7 +3,7 @@ import select
 import socket
 
 from rejected import consumer
-from tornado import gen, httpclient, httputil
+from tornado import gen, httpclient, httputil, ioloop
 
 
 class HTTPServiceMixin(consumer.Consumer):
@@ -32,6 +32,37 @@ class HTTPServiceMixin(consumer.Consumer):
     the **HTTP service** which is passed into :meth:`.get_service_url` to
     construct the request URL.
 
+    HTTP client behavior is controlled via consumer level configuration under
+    the ``vetoes`` key. The following options are available:
+
+    +-----------------+-----------------------------------------------------+
+    | Key             | Description                                         |
+    +=================+=====================================================+
+    | max_clients     | The max # of simultaneous requests that can be made |
+    +-----------------+-----------------------------------------------------+
+    | connect_timeout | Timeout for initial connection in seconds           |
+    +-----------------+-----------------------------------------------------+
+    | request_time    | Timeout for entire request in seconds               |
+    +-----------------+-----------------------------------------------------+
+
+    *Example Configuration:*
+
+    .. code:: yaml
+
+        Application:
+          Consumers:
+            example:
+              consumer: rejected.example.Consumer
+              connections:
+                - name: rabbitmq1
+              qty: 2
+              queue: generated_messages
+              config:
+                vetoes:
+                  max_clients: 10
+                  connect_timeout: 5.0
+                  request_timeout: 30.0
+
     .. attribute:: http_headers
 
        :class:`tornado.httputil.HTTPHeaders` instance of headers
@@ -49,9 +80,15 @@ class HTTPServiceMixin(consumer.Consumer):
         self.__service_map = kwargs.pop('service_map')
         super(HTTPServiceMixin, self).__init__(*args, **kwargs)
         self.http_headers = httputil.HTTPHeaders()
-        self.http = httpclient.AsyncHTTPClient()
-        self.http.defaults['connect_timeout'] = 5.0
-        self.http.defaults['request_timeout'] = 30.0
+        settings = self._settings.get('vetoes', {})
+        self.http = httpclient.AsyncHTTPClient(
+            force_instance=True,
+            max_clients=settings.get('max_clients'))
+        self.http.defaults['connect_timeout'] = \
+            settings.get('connect_timeout', 5.0)
+        self.http.defaults['request_timeout'] = \
+            settings.get('request_timeout', 30.0)
+        self.io_loop = ioloop.IOLoop.current()
 
     @gen.coroutine
     def call_http_service(self, function, method, *path, **kwargs):
@@ -87,16 +124,16 @@ class HTTPServiceMixin(consumer.Consumer):
 
         """
         headers = httputil.HTTPHeaders()
-        cid = getattr(self, '_correlation_id', self.correlation_id)
-        if cid:
-            headers['Correlation-ID'] = cid
+        if self.correlation_id:
+            headers['Correlation-Id'] = self.correlation_id
         headers.update(self.http_headers)
         headers.update(kwargs.pop('headers', {}))
 
         if 'json' in kwargs:
-            body = json.dumps(kwargs.pop('json')).encode('utf-8')
-            kwargs['body'] = body
-            headers.setdefault('Content-Type', 'application/json')
+            if kwargs['json'] is not None:
+                headers.setdefault('Content-Type', 'application/json')
+                kwargs['body'] = json.dumps(kwargs['json']).encode('utf-8')
+            kwargs.pop('json', None)
 
         if headers:
             kwargs['headers'] = headers
@@ -109,31 +146,31 @@ class HTTPServiceMixin(consumer.Consumer):
             url = self.get_service_url(
                 service, *path, query_args=kwargs.pop('query_args', None))
 
-        self.sentry_client.tags_context({'service_invoked': service})
+        self.set_sentry_context('service_invoked', service)
 
         self.logger.debug('sending %s request to %s', method, url)
         raise_error = kwargs.pop('raise_error', True)
-        start_time = self._channel.connection.ioloop.time()
+        start_time = self.io_loop.time()
 
         try:
             response = yield self.http.fetch(url, method=method,
                                              raise_error=False, **kwargs)
-            self.statsd_add_timing(
+            self.stats_add_timing(
                 'http.{0}.{1}'.format(function, response.code),
                 response.request_time)
 
         except (OSError, select.error, socket.error) as e:
             self.logger.exception('%s to %s failed', method, url)
-            self.statsd_add_timing(
+            self.stats_add_timing(
                 'http.{0}.timeout'.format(function),
-                self._channel.connection.ioloop.time() - start_time)
-            self.statsd_incr(
+                self.io_loop.time() - start_time)
+            self.stats_incr(
                 'errors.socket.{0}'.format(getattr(e, 'errno', 'unknown')))
             raise consumer.ProcessingException(
                 '{0} connection failure - {1}'.format(service, e))
 
         finally:
-            self.sentry_client.tags.pop('service_invoked', None)
+            self.unset_sentry_context('service_invoked')
 
         if response.code == 429:
             raise consumer.ProcessingException(

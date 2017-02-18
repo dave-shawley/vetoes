@@ -16,6 +16,10 @@ Configuration Related
 Release History
 ===============
 
+`Next Release`_
+---------------
+- Updated to work against rejected 3.17
+
 `0.2.0`_ (10-Jan-2017)
 ----------------------
 - Added ``url`` keyword to
