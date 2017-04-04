@@ -88,7 +88,6 @@ class HTTPServiceMixin(consumer.Consumer):
             settings.get('connect_timeout', 5.0)
         self.http.defaults['request_timeout'] = \
             settings.get('request_timeout', 30.0)
-        self.io_loop = ioloop.IOLoop.current()
 
     @gen.coroutine
     def call_http_service(self, function, method, *path, **kwargs):
@@ -150,21 +149,22 @@ class HTTPServiceMixin(consumer.Consumer):
 
         self.logger.debug('sending %s request to %s', method, url)
         raise_error = kwargs.pop('raise_error', True)
-        start_time = self.io_loop.time()
+        iol = self._channel.connection.ioloop
+        start_time = iol.time()
 
         try:
             response = yield self.http.fetch(url, method=method,
                                              raise_error=False, **kwargs)
-            self.stats_add_timing(
+            self.statsd_add_timing(
                 'http.{0}.{1}'.format(function, response.code),
                 response.request_time)
 
         except (OSError, select.error, socket.error) as e:
             self.logger.exception('%s to %s failed', method, url)
-            self.stats_add_timing(
+            self.statsd_add_timing(
                 'http.{0}.timeout'.format(function),
-                self.io_loop.time() - start_time)
-            self.stats_incr(
+                iol.time() - start_time)
+            self.statsd_incr(
                 'errors.socket.{0}'.format(getattr(e, 'errno', 'unknown')))
             raise consumer.ProcessingException(
                 '{0} connection failure - {1}'.format(service, e))
