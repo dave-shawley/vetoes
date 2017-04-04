@@ -19,6 +19,8 @@ Release History
 `Next Release`_
 ---------------
 - Updated to work against rejected 3.17
+- Change :meth:`vetoes.service.HTTPServiceMixin.call_http_service` so that
+  it honors timeouts set by :class:`vetoes.config.TimeoutConfigurationMixin`.
 
 `0.2.0`_ (10-Jan-2017)
 ----------------------

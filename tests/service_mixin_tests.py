@@ -5,7 +5,7 @@ from rejected import consumer, testing
 from tornado import concurrent, gen
 import mock
 
-from vetoes import service
+from vetoes import config, service
 
 
 class Consumer(service.HTTPServiceMixin,
@@ -26,6 +26,10 @@ class Consumer(service.HTTPServiceMixin,
 
     def get_service_url(self, service, *path, **kwargs):
         return 'http://httpbin.org/status/200'
+
+
+class ConfigurableConsumer(config.TimeoutConfigurationMixin, Consumer):
+    pass
 
 
 class HTTPServiceMixinTests(testing.AsyncTestCase):
@@ -65,6 +69,7 @@ class HTTPServiceMixinTests(testing.AsyncTestCase):
             measurement = yield self.process_message()
             self.assertEqual(measurement.values['http.fetch-stats.599'],
                              self.http_response.request_time)
+
     @testing.gen_test
     def test_that_rate_limiting_result_in_processing_exceptions(self):
         self.http_response.code = 429
@@ -136,3 +141,52 @@ class HTTPServiceMixinTests(testing.AsyncTestCase):
             'service_invoked', 'frobinicate')
         context['unset_sentry_context'].assert_called_once_with(
             'service_invoked')
+
+
+class TimeoutConfiguredTests(testing.AsyncTestCase):
+
+    def setUp(self):
+        super(TimeoutConfiguredTests, self).setUp()
+        self.consumer.http = mock.Mock()
+        self.http_response = mock.Mock(code=200, request_time=0)
+        self.consumer.http.fetch.return_value = concurrent.Future()
+        self.consumer.http.fetch.return_value.set_result(self.http_response)
+
+    def get_consumer(self):
+        return ConfigurableConsumer
+
+    @testing.gen_test
+    def test_that_timeout_is_passed_through(self):
+        yield self.process_message()
+        self.consumer.http.fetch.assert_called_once_with(
+            mock.ANY, headers=mock.ANY, method=mock.ANY, body=mock.ANY,
+            raise_error=False,
+            request_timeout=self.consumer.get_timeout('default'))
+
+    @testing.gen_test
+    def test_that_timeout_can_be_configured_by_function(self):
+        self.consumer.settings.setdefault('timeouts', {})
+        self.consumer.settings['timeouts']['fetch-stats'] = 1234.5
+        yield self.process_message()
+        self.consumer.http.fetch.assert_called_once_with(
+            mock.ANY, headers=mock.ANY, method=mock.ANY, body=mock.ANY,
+            raise_error=False, request_timeout=1234.5)
+
+    @testing.gen_test
+    def test_that_timeout_can_be_configured_by_service(self):
+        self.consumer.settings.setdefault('timeouts', {})
+        self.consumer.settings['timeouts']['httpbin'] = 1234.5
+        yield self.process_message()
+        self.consumer.http.fetch.assert_called_once_with(
+            mock.ANY, headers=mock.ANY, method=mock.ANY, body=mock.ANY,
+            raise_error=False, request_timeout=1234.5)
+
+    @testing.gen_test
+    def test_that_function_timeout_is_preferred(self):
+        self.consumer.settings.setdefault('timeouts', {})
+        self.consumer.settings['timeouts']['fetch-stats'] = 1234.5
+        self.consumer.settings['timeouts']['httpbin'] = 9876.5
+        yield self.process_message()
+        self.consumer.http.fetch.assert_called_once_with(
+            mock.ANY, headers=mock.ANY, method=mock.ANY, body=mock.ANY,
+            raise_error=False, request_timeout=1234.5)

@@ -145,6 +145,10 @@ class HTTPServiceMixin(consumer.Consumer):
             url = self.get_service_url(
                 service, *path, query_args=kwargs.pop('query_args', None))
 
+        if 'request_timeout' not in kwargs and hasattr(self, 'get_timeout'):
+            kwargs['request_timeout'] = self.get_timeout(
+                function, self.get_timeout(service))
+
         self.set_sentry_context('service_invoked', service)
 
         self.logger.debug('sending %s request to %s', method, url)
