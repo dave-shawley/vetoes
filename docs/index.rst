@@ -16,8 +16,8 @@ Configuration Related
 Release History
 ===============
 
-`Next Release`_
----------------
+`0.3.0`_ (04-Apr-2017)
+----------------------
 - Updated to work against rejected 3.17
 - Change :meth:`vetoes.service.HTTPServiceMixin.call_http_service` so that
   it honors timeouts set by :class:`vetoes.config.TimeoutConfigurationMixin`.
@@ -37,7 +37,8 @@ Release History
   :class:`vetoes.config.FeatureFlagMixin`, and
   :class:`vetoes.config.TimeoutConfigurationMixin`
 
-.. _Next Release: https://github.aweber.io/edeliv/vetoes/compare/0.2.0...HEAD
+.. _Next Release: https://github.aweber.io/edeliv/vetoes/compare/0.3.0...HEAD
+.. _0.3.0: https://github.aweber.io/edeliv/vetoes/compare/0.2.0...0.3.0
 .. _0.2.0: https://github.aweber.io/edeliv/vetoes/compare/0.1.1...0.2.0
 .. _0.1.1: https://github.aweber.io/edeliv/vetoes/compare/0.1.0...0.1.1
 .. _0.1.0: https://github.aweber.io/edeliv/vetoes/compare/0.0.0...0.1.0
