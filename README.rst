@@ -21,7 +21,7 @@ functionality on top of `rejected`_.
 .. _rejected: https://rejected.readthedocs.io/
 .. |Coveralls| image:: https://img.shields.io/coveralls/dave-shawley/vetoes.svg
    :target: https://coveralls.io/github/dave-shawley/vetoes
-.. |GitHub| image:: https://img.shields.io/github/release/daves-shawley/vetoes.svg
+.. |GitHub| image:: https://img.shields.io/github/issues/dave-shawley/vetoes.svg
    :target: https://github.com/dave-shawley/vetoes
 .. |PyPI| image:: https://img.shields.io/pypi/v/vetoes.svg
    :target: https://pypi.org/project/vetoes
