@@ -3,7 +3,7 @@ import select
 import socket
 
 from rejected import consumer
-from tornado import gen, httpclient, httputil, ioloop
+from tornado import gen, httpclient, httputil
 
 
 class HTTPServiceMixin(consumer.Consumer):
