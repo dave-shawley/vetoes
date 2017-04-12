@@ -2,8 +2,9 @@ import json
 import select
 import socket
 try:
-    from urllib.parse import urlsplit, urlunsplit
+    from urllib.parse import unquote, urlsplit, urlunsplit
 except ImportError:
+    from urllib import unquote
     from urlparse import urlsplit, urlunsplit
 
 from rejected import consumer
@@ -150,10 +151,10 @@ class HTTPServiceMixin(consumer.Consumer):
                 service, *path, query_args=kwargs.pop('query_args', None))
         parts = urlsplit(url)
         if parts.username or parts.password:
-            kwargs['auth_username'] = kwargs.get('auth_username',
-                                                 parts.username)
-            kwargs['auth_password'] = kwargs.get('auth_password',
-                                                 parts.password)
+            username = unquote(parts.username)
+            password = unquote(parts.password)
+            kwargs['auth_username'] = kwargs.get('auth_username', username)
+            kwargs['auth_password'] = kwargs.get('auth_password', password)
             netloc = parts.hostname
             if parts.port:
                 netloc = '{}:{}'.format(netloc, parts.port)
