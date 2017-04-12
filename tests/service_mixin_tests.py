@@ -176,6 +176,21 @@ class HTTPServiceMixinTests(testing.AsyncTestCase):
             body=mock.ANY, headers=mock.ANY,
             auth_username='foo', auth_password='fu:u')
 
+    @testing.gen_test
+    def test_that_auth_keywords_are_preferred(self):
+        with mock.patch.multiple(self.consumer,
+                                 set_sentry_context=mock.DEFAULT,
+                                 unset_sentry_context=mock.DEFAULT) as context:
+            response = yield self.consumer.call_http_service(
+                'frobinicate', 'GET', url='http://example.com:8080/path',
+                auth_username='foo', auth_password='bar')
+            self.consumer.http.fetch.assert_called_once_with(
+                'http://example.com:8080/path',
+                method='GET', raise_error=False,
+                    auth_username='foo', auth_password='bar',
+            )
+            self.assertIs(response, self.http_response)
+
 
 class TimeoutConfiguredTests(testing.AsyncTestCase):
 
