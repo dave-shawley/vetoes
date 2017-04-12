@@ -25,7 +25,8 @@ class Consumer(service.HTTPServiceMixin,
                                         'json': self.request_json})
 
     def get_service_url(self, service, *path, **kwargs):
-        return 'http://httpbin.org/status/200'
+        return self.settings.get('service_url',
+                                 'http://httpbin.org/status/200')
 
 
 class ConfigurableConsumer(config.TimeoutConfigurationMixin, Consumer):
@@ -141,6 +142,30 @@ class HTTPServiceMixinTests(testing.AsyncTestCase):
             'service_invoked', 'frobinicate')
         context['unset_sentry_context'].assert_called_once_with(
             'service_invoked')
+
+    @testing.gen_test
+    def test_that_auth_parameters_are_detected_in_service_url(self):
+        self.consumer.settings['service_url'] = 'http://foo:bar@example.com'
+        yield self.process_message()
+        self.consumer.http.fetch.assert_called_once_with(
+            'http://example.com', method='GET', raise_error=mock.ANY,
+            body=mock.ANY, headers=mock.ANY,
+            auth_username='foo', auth_password='bar')
+
+    @testing.gen_test
+    def test_that_auth_parameters_are_detected_in_overridden_url(self):
+        with mock.patch.multiple(self.consumer,
+                                 set_sentry_context=mock.DEFAULT,
+                                 unset_sentry_context=mock.DEFAULT) as context:
+            response = yield self.consumer.call_http_service(
+                'frobinicate', 'GET',
+                url='http://foo:bar@example.com:8080/path')
+            self.consumer.http.fetch.assert_called_once_with(
+                'http://example.com:8080/path',
+                method='GET', raise_error=False,
+                    auth_username='foo', auth_password='bar',
+            )
+            self.assertIs(response, self.http_response)
 
 
 class TimeoutConfiguredTests(testing.AsyncTestCase):
