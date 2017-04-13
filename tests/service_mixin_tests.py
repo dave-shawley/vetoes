@@ -191,6 +191,25 @@ class HTTPServiceMixinTests(testing.AsyncTestCase):
             )
             self.assertIs(response, self.http_response)
 
+    @testing.gen_test
+    def test_that_auth_does_not_require_password(self):
+        self.consumer.settings['service_url'] = 'http://foo@example.com'
+        yield self.process_message()
+        self.consumer.http.fetch.assert_called_once_with(
+            'http://example.com', method='GET', raise_error=mock.ANY,
+            body=mock.ANY, headers=mock.ANY,
+            auth_username='foo', auth_password=None)
+
+    @testing.gen_test
+    def test_that_auth_does_not_require_username(self):
+        # Not sure of the use case here but ... whatever
+        self.consumer.settings['service_url'] = 'http://:foo@example.com'
+        yield self.process_message()
+        self.consumer.http.fetch.assert_called_once_with(
+            'http://example.com', method='GET', raise_error=mock.ANY,
+            body=mock.ANY, headers=mock.ANY,
+            auth_username=None, auth_password='foo')
+
 
 class TimeoutConfiguredTests(testing.AsyncTestCase):
 

@@ -151,8 +151,8 @@ class HTTPServiceMixin(consumer.Consumer):
                 service, *path, query_args=kwargs.pop('query_args', None))
         parts = urlsplit(url)
         if parts.username or parts.password:
-            username = unquote(parts.username)
-            password = unquote(parts.password)
+            username = unquote(parts.username) if parts.username else None
+            password = unquote(parts.password) if parts.password else None
             kwargs['auth_username'] = kwargs.get('auth_username', username)
             kwargs['auth_password'] = kwargs.get('auth_password', password)
             netloc = parts.hostname
