@@ -16,7 +16,7 @@ Configuration Related
 Release History
 ===============
 
-`0.4.0`_ (12-Apr-2017)
+`0.4.0`_ (13-Apr-2017)
 ----------------------
 - Added support to correctly translate ``user:password@host`` style
   URLs into ``auth_username`` and ``auth_password`` keyword parameters
